@@ -1,0 +1,23 @@
+{
+  "name": "mi-proyecto",
+  "version": "1.0.0",
+  "description": "Descripción de mi primer proyecto",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "lanza:axios": "axios"
+  },
+  "keywords": [
+    "typescript",
+    "ts"
+  ],
+  "author": "Gorka Villar",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0"
+  }
+}
