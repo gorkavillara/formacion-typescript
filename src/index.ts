@@ -1,3 +1,12 @@
-import chalk from "chalk"
+import chalk from "chalk";
+import { Observable } from "rxjs";
 
-console.log(chalk.blue("Hola mundo"))
+const observable = new Observable((observer) => {
+  observer.next("Hola, mundo!");
+  observer.next("Adiós, mundo!");
+  observer.complete();
+});
+
+observable.subscribe((value) => {
+  console.log(chalk.blue(value));
+});
