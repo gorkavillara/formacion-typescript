@@ -1,47 +1,32 @@
-let db: IDBDatabase
-const openDB = window.indexedDB.open("db_tareas", 1)
+const formulario = document.querySelector("form")!
+const input = document.querySelector("input[name=nombre]") as HTMLInputElement
 
-openDB.addEventListener("error", () =>
-    console.error("Error abriendo la IndexedDB")
-)
+formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault()
+    console.log(evento)
 
-openDB.addEventListener("success", () => {
-    console.log("IndexedDB abierta correctamente")
-    db = openDB.result
+    const nombre = input.value
+    console.log(nombre)
+
+    localStorage.setItem("username", nombre)
+    console.log("El usuario se ha guardado correctamente")
+
+    chequeaDisplay()
 })
 
-openDB.addEventListener("upgradeneeded", () => {
-    db = openDB.result
+const divSaludo = document.querySelector("div#saludo") as HTMLDivElement
+const spanNombre = document.querySelector("span#nombre") as HTMLSpanElement
 
-    db.onerror = () => {
-        console.error("Error creando la IndexedDB.")
+const chequeaDisplay = () => {
+    const nombreUsuario = localStorage.getItem("username")
+    if(!nombreUsuario) {
+        divSaludo.style.display = "none"
+        return
     }
 
-    db.createObjectStore("tareas", { keyPath: "id", autoIncrement: true })
-})
-
-const tareas = document.querySelector("ol") as HTMLOListElement
-const form = document.querySelector("form") as HTMLFormElement
-const todoTitle = document.querySelector("#task-name") as HTMLInputElement
-
-const muestraTareas = () => {
-    const transaction = db.transaction(["tareas"], "readwrite")
-    const objectStore = transaction.objectStore("tareas")
-    const query = objectStore.getAll()
-    query.onsuccess = () => console.log(query.result)
+    divSaludo.style.display = "block"
+    formulario.style.display = "none"
+    spanNombre.innerText = nombreUsuario
 }
 
-const nuevaTarea = (e: SubmitEvent) => {
-    e.preventDefault()
-    const newTodo = { tarea: todoTitle.value }
-
-    const transaction = db.transaction(["tareas"], "readwrite")
-    const objectStore = transaction.objectStore("tareas")
-
-    const query = objectStore.add(newTodo)
-    query.onsuccess = () => (todoTitle.value = "")
-    transaction.oncomplete = () => muestraTareas()
-    transaction.onerror = () => console.log("Error en la transacción")
-}
-
-form.addEventListener("submit", nuevaTarea)
+chequeaDisplay()
