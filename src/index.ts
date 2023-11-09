@@ -1,47 +1,59 @@
-let db: IDBDatabase
-const openDB = window.indexedDB.open("db_tareas", 1)
+function miDecoradorDeClase(constructor: Function) {
+    // Lo que queramos con el constructor
+    constructor.prototype.esDesarrollador = true
+}
+function logueaNombreMetodo(
+    target: any,
+    methodName: string,
+    descriptor: PropertyDescriptor
+) {
+    const funcionOriginal = target[methodName]
 
-openDB.addEventListener("error", () =>
-    console.error("Error abriendo la IndexedDB")
-)
-
-openDB.addEventListener("success", () => {
-    console.log("IndexedDB abierta correctamente")
-    db = openDB.result
-})
-
-openDB.addEventListener("upgradeneeded", () => {
-    db = openDB.result
-
-    db.onerror = () => {
-        console.error("Error creando la IndexedDB.")
+    function funcionConLog(this: any) {
+        console.log(`Estamos ejecutando el método ${methodName}`)
+        funcionOriginal.apply(this)
     }
 
-    db.createObjectStore("tareas", { keyPath: "id", autoIncrement: true })
-})
+    target[methodName] = funcionConLog
 
-const tareas = document.querySelector("ol") as HTMLOListElement
-const form = document.querySelector("form") as HTMLFormElement
-const todoTitle = document.querySelector("#task-name") as HTMLInputElement
+    return target
+}
+function miDecoradorDeParametro(
+    target: any,
+    nombreDelMetodo: string,
+    parameterIndex: number
+) {
+    console.log(
+        `Clase: ${target}, Método: ${nombreDelMetodo}, Índice del parámetro: ${parameterIndex}`
+    )
+}
+function miDecoradorDePropiedad(target: any, nombreDeLaPropiedad: string) {
+    console.log({ constructor: target.constructor })
+    console.log(`El nombre de la propiedad es: ${nombreDeLaPropiedad}`)
+}
+// @miDecoradorDeClase
+class Personaje {
+    @miDecoradorDePropiedad
+    nombre: string
 
-const muestraTareas = () => {
-    const transaction = db.transaction(["tareas"], "readwrite")
-    const objectStore = transaction.objectStore("tareas")
-    const query = objectStore.getAll()
-    query.onsuccess = () => console.log(query.result)
+    constructor() {
+        this.nombre = "Gorka"
+    }
+
+    // @logueaNombreMetodo
+    saluda() {
+        console.log(`Hola mi nombre es ${this.nombre}`)
+    }
+
+    hazUnaSuma(a: number, @miDecoradorDeParametro b: number) {
+        console.log(`Hola me llamo ${this.nombre} y el resultado es ${a + b}`)
+    }
 }
 
-const nuevaTarea = (e: SubmitEvent) => {
-    e.preventDefault()
-    const newTodo = { tarea: todoTitle.value }
+const personaje = new Personaje()
 
-    const transaction = db.transaction(["tareas"], "readwrite")
-    const objectStore = transaction.objectStore("tareas")
+//@ts-ignore
+console.log(personaje.esDesarrollador)
+personaje.saluda()
 
-    const query = objectStore.add(newTodo)
-    query.onsuccess = () => (todoTitle.value = "")
-    transaction.oncomplete = () => muestraTareas()
-    transaction.onerror = () => console.log("Error en la transacción")
-}
-
-form.addEventListener("submit", nuevaTarea)
+// personaje.hazUnaSuma(5, 12)
